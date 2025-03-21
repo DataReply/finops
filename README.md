@@ -1,1 +1,1 @@
-# finops
+# finops: Compare different LLM hosting solutions (Self-Hosted vs Bedrock)
