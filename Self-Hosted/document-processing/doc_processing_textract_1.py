@@ -1,3 +1,4 @@
+# This file contains script which answers in single or multi-words
 import os
 import json
 import boto3  # AWS Textract for document text extraction
@@ -9,21 +10,6 @@ textract = boto3.client('textract', region_name='eu-central-1')
 
 # Cache file for storing extracted text
 data_cache_file = "Self-Hosted/extracted_text_cache.json"
-
-questions = [
-        "Answer just in Yes or No: All invoices belong to year 2023 only?",
-        "Answer just in Yes or No: Any receipt for Cheese Cake Factory?",
-        "Answer just in Yes or No: Any invoice of Starbucks?",
-        "Answer just in Yes or No: All receipts belong to year 2023 or 2024 only?",
-        "Answer just in Yes or No: Total amount paid at Cafe Gelato was 31.28 dollars?",
-        "Answer just in Yes or No: Total amount paid at McDonald's was 12.90 euros?",
-        "Answer just in Yes or No: Maximum total amount was paid at Jimmy's?",
-        "Answer just in Yes or No: Maximum tax was paid at Jimmy's?",
-        "Answer just in Yes or No: Any receipt from year 2022?",
-        "Answer just in Yes or No: Maximum discount was given at Old Navy?"
-    ]
-
-ground_truths = ["No", "Yes", "No", "Yes", "Yes", "No", "Yes", "No", "No", "Yes"]
 
 # Load cached data if available
 def load_cached_data():
@@ -44,6 +30,7 @@ def extract_text_from_pdf_textract(pdf_path):
             Document={'Bytes': document.read()},
             FeatureTypes=['TABLES', 'FORMS']
         )
+    
     extracted_text = "".join([block['Text'] for block in response['Blocks'] if block['BlockType'] == 'LINE'])
     return extracted_text.strip()
 
@@ -64,7 +51,8 @@ def extract_text_from_pdfs(pdf_directory):
                     print(f"Processing: {filename}")
                     text = extract_text_from_pdf_textract(pdf_path)
                     cached_data[filename] = text
-                    save_cached_data(cached_data)             
+                    save_cached_data(cached_data)
+                
                 combined_text += text + "\n\n"
     
     return combined_text
@@ -72,17 +60,18 @@ def extract_text_from_pdfs(pdf_directory):
 # Function to query a model via Ollama API
 def ask_ollama(model, prompt):
     url = "http://localhost:11434/api/generate"
-    payload = {"model": model, "prompt": prompt, "temperature": 0.2, "stream": False}
+    payload = {"model": model, "prompt": prompt, "stream": False}
     
     response = requests.post(url, json=payload)
     if response.status_code == 200:
-        return response.json().get("response", "No response received")[:4]
+        return response.json().get("response", "No response received")
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
 
 # Main function to process PDFs and answer questions
-def process_pdfs_and_answer_questions(pdf_directory, questions, iterations):
+def process_pdfs_and_answer_questions(pdf_directory, questions, iterations=1):
     combined_text = extract_text_from_pdfs(pdf_directory)
+    ground_truths = ["Jimmy Buffett's", "CVS Pharmacy", "37.50", "188.24", "2.07", "Mastercard", "9.74", "Seattle", "2890 Taylor Street, San Francisco, CA 94133", "Cheese Cake, Lucky Louie, McDonald's, Old Navy, Space Needle, Whole Foods"]
     
     for i in range(iterations):
         print(f"\nIteration {i+1}:")
@@ -110,7 +99,20 @@ def process_pdfs_and_answer_questions(pdf_directory, questions, iterations):
 if __name__ == "__main__":
     start = time.time()
     pdf_directory = "Self-Hosted/document-processing/Receipts"
-    process_pdfs_and_answer_questions(pdf_directory, questions, iterations=10)
+    questions = [
+        "Maximum total amount was paid at which company?",
+        "Minimum total amount was paid at which company?",
+        "What was the maximum amount paid for single item?",
+        "Maximum total amount without discount?",
+        "How much tax was paid at Cafe Gelato?",
+        "What is the method of payment at BeerHaus?",
+        "How much tip was given at Denny's?",
+        "Whole Foods is in which city?",
+        "Where is Chowder hut located?",
+        "List all companies with receipts from 2024?"
+    ]
+    
+    process_pdfs_and_answer_questions(pdf_directory, questions, iterations=1)
     end = time.time()
     total_time = end - start
     print("\nTotal Execution time:"+ str(total_time))

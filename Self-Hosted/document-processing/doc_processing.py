@@ -1,3 +1,4 @@
+# Uses python libraries for pdf text extraction
 import os
 import requests  # For interacting with Ollama's API
 import fitz  # PyMuPDF for PDF text extraction

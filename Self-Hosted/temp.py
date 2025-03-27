@@ -12,7 +12,7 @@ def count_pdfs(directory):
     return pdf_count
 
 # Specify the directory to search
-directory_path = "document-processing/Receipts/"
+directory_path = "Self-Hosted/document-processing/Receipts"
 
 # Count PDFs
 pdf_count = count_pdfs(directory_path)
