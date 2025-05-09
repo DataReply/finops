@@ -1,3 +1,5 @@
+# Uses AWS textract for text extraction
+# Simple Yes/No questions related to receipt text are asked
 import os
 import json
 import boto3  # AWS Textract for document text extraction
@@ -8,7 +10,7 @@ import time
 textract = boto3.client('textract', region_name='eu-central-1')
 
 # Cache file for storing extracted text
-data_cache_file = "Self-Hosted/extracted_text_cache.json"
+data_cache_file = "Self-Hosted/document-processing/extracted_text_cache.json"
 
 questions = [
         "Answer just in Yes or No: All invoices belong to year 2023 only?",

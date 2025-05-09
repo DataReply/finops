@@ -1,3 +1,5 @@
+# Uses AWS textract for text extraction
+# Questions with Single or Multi-words answers are asked
 # This file contains script which answers in single or multi-words
 import os
 import json
