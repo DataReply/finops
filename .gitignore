@@ -1,1 +1,3 @@
 .env
+/terraform/ec2/.terraform/
+/aws/
